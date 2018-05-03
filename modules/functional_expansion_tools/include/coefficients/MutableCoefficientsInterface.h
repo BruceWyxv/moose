@@ -121,7 +121,7 @@ protected:
 
 private:
   /// MooseObject instance of `this` to provide access to `_console`
-  const ConsoleStream & _console;
+  const ConsoleStream & _mci_console;
 };
 
 #endif // MUTABLECOEFFICIENTSINTERFACE_H

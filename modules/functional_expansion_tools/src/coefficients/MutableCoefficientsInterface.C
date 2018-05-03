@@ -37,7 +37,7 @@ MutableCoefficientsInterface::MutableCoefficientsInterface(const MooseObject * m
     _coefficients(declareRestartableData<std::vector<Real>>("coefficients")),
     _enforce_size(false),
     _print_coefficients(parameters.get<bool>("print_when_set")),
-    _console(moose_object->_console)
+    _mci_console(moose_object->_console)
 {
 }
 
@@ -121,7 +121,7 @@ MutableCoefficientsInterface::importCoefficients(const MutableCoefficientsInterf
   _coefficients = other._coefficients;
 
   if (_print_coefficients)
-    _console << *this;
+    _mci_console << *this;
 
   coefficientsChanged();
 }
@@ -138,7 +138,7 @@ MutableCoefficientsInterface::resize(std::size_t size, Real fill, bool fill_out_
     _coefficients.resize(size, fill);
 
     if (_print_coefficients)
-      _console << *this;
+      _mci_console << *this;
 
     coefficientsChanged();
   }
@@ -161,7 +161,7 @@ MutableCoefficientsInterface::setCoefficients(const std::vector<Real> & new_coef
   _coefficients = new_coefficients;
 
   if (_print_coefficients)
-    _console << *this;
+    _mci_console << *this;
 
   coefficientsChanged();
 }
@@ -176,7 +176,7 @@ MutableCoefficientsInterface::setCoefficients(std::vector<Real> && dropin_coeffi
   _coefficients = dropin_coefficients;
 
   if (_print_coefficients)
-    _console << *this;
+    _mci_console << *this;
 
   coefficientsChanged();
 }

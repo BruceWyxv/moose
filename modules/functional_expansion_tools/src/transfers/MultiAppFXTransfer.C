@@ -82,8 +82,11 @@ MultiAppFXTransfer::scanProblemBaseForObject(FEProblemBase & base,
                                              const std::string & app_name)
 {
   /*
-   * For now we are only considering Functions and UserObjects, as they are the only types currently
-   * implemented with MutableCoefficientsInterface. Others may be added later.
+   * For now we are only considering Executioners, Functions, and UserObjects, as they are the only
+   * types currently implemented with MutableCoefficientsInterface. Others may be added later.
+   *
+   * Executioners:
+   *   FXExecutioner
    *
    * Functions:
    *   FunctionSeries
@@ -94,8 +97,11 @@ MultiAppFXTransfer::scanProblemBaseForObject(FEProblemBase & base,
    */
   MutableCoefficientsInterface * interface;
 
+  if (base.hasExecutioner(object_name))
+  {
+  }
   // Check to see if the object with object_name is a Function
-  if (base.hasFunction(object_name))
+  else if (base.hasFunction(object_name))
   {
     Function & function = base.getFunction(object_name);
     interface = dynamic_cast<MutableCoefficientsInterface *>(&function);

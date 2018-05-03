@@ -40,6 +40,13 @@ protected:
 
 private:
   /**
+   * Gets a MutableCoefficientsInterface-based Executioner, intented for use via function pointer
+   */
+  MutableCoefficientsInterface & getMutableCoefficientsExecutioner(FEProblemBase & base,
+                                                                   const std::string & object_name,
+                                                                   THREAD_ID thread);
+
+  /**
    * Gets a MutableCoefficientsInterface-based Function, intented for use via function pointer
    */
   MutableCoefficientsInterface & getMutableCoefficientsFunction(FEProblemBase & base,

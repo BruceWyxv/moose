@@ -24,6 +24,11 @@ class FXInputParameters
 public:
   FXInputParameters(const InputParameters & parameters);
 
+  /**
+   * Generate the characteristics vector for use by MutableCoefficientsInterface
+   */
+  virtual std::vector<std::size_t> generateCharacteristics() const;
+
 protected:
   /// The vector holding the orders of each single series
   const std::vector<std::size_t> _orders;

@@ -86,7 +86,11 @@ public:
   /**
    * Sets the characteristics array
    */
-  void setCharacteristics(const std::vector<std::size_t> & new_characteristics);
+  void setCharacteristics(const std::vector<std::size_t> & copy_characteristics);
+  /**
+   * Sets the characteristics array
+   */
+  void setCharacteristics(std::vector<std::size_t> && move_characteristics);
   /**
    * Set the coefficients using a copy operation
    */

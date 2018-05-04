@@ -125,7 +125,7 @@ FXIntegralBaseUserObject<IntegralBaseVariableUserObject>::FXIntegralBaseUserObje
   // Size the coefficient arrays
   _coefficient_partials.resize(_function_series.getNumberOfTerms(), 0.0);
   _coefficients.resize(_function_series.getNumberOfTerms(), 0.0);
-  _characteristics = _function_series.getOrders();
+  _characteristics = _function_series.getCharacteristics();
 
   if (!_keep_history)
     _coefficient_history.resize(0);

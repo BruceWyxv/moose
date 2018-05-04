@@ -68,6 +68,62 @@ FXInputParameters::FXInputParameters(const InputParameters & parameters)
 }
 
 std::vector<std::size_t>
+FXInputParameters::generateCharacteristics() const
+{
+  std::vector<std::size_t> characteristics;
+
+  // Add the integer representation of the MooseEnum for the series represetation
+  characteristics.push_back(_series_type_name);
+
+  if (_series_type_name == "Cartesian")
+  {
+    // X axis
+    if (_x.isValid())
+    {
+      characteristics.push_back(_x);
+      characteristics.push_back(_orders[0]);
+    }
+
+    // Y axis
+    if (_y.isValid())
+    {
+      characteristics.push_back(_y);
+      characteristics.push_back(_orders[1]);
+    }
+
+    // Z zxis
+    if (_z.isValid())
+    {
+      characteristics.push_back(_z);
+      characteristics.push_back(_orders[2]);
+    }
+  }
+  else if (_series_type_name == "CylindricalDuo")
+  {
+    // Axial orientation
+    if (_x.isValid())
+    {
+      characteristics.push_back(_x);
+    }
+    else if (_y.isValid())
+    {
+      characteristics.push_back(_y);
+    }
+    else if (_z.isValid())
+    {
+      characteristics.push_back(_z);
+    }
+    characteristics.push_back(_orders[0]);
+
+    // Disc orientation
+    characteristics.push_back(_disc);
+    characteristics.push_back(_orders[1]);
+  }
+
+  return characteristics;
+}
+
+std::vector<std::size_t>
 FXInputParameters::convertOrders(const std::vector<unsigned int> & orders)
 {
   return std::vector<std::size_t>(orders.begin(), orders.end());

@@ -131,7 +131,7 @@ FunctionSeries::FunctionSeries(const InputParameters & parameters)
 
   // Resize the coefficient array as needed
   enforceSize(false), resize(getNumberOfTerms(), 0.0), enforceSize(true);
-  setCharacteristics(_orders);
+  setCharacteristics(generateCharacteristics());
 }
 
 FunctionSeries &

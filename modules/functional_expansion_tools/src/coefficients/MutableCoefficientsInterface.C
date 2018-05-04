@@ -86,16 +86,28 @@ MutableCoefficientsInterface::isCompatibleWith(const MutableCoefficientsInterfac
 {
   // Check the coefficient sizes if requested
   if ((_enforce_size && other._enforce_size) && getSize() != other.getSize())
+  {
+    _mci_console << "MCI Incompatible: Mismatched number of coefficients (" << getSize() << " vs. "
+                 << other.getSize() << ")" << std::endl;
     return false;
+  }
 
   // Check the size of the characteristics array
   if (_characteristics.size() != other._characteristics.size())
+  {
+    _mci_console << "MCI Incompatible: Mismatched characteristic sizes (" << _characteristics.size()
+                 << " vs. " << other._characteristics.size() << ")" << std::endl;
     return false;
+  }
 
   // Check the values of the characteristics array
   for (std::size_t i = 0; i < _characteristics.size(); ++i)
     if (_characteristics[i] != other._characteristics[i])
+    {
+      _mci_console << "MCI Incompatible: Mismatched characteristic values (" << _characteristics[i]
+                   << " vs. " << other._characteristics[i] << ") at index " << i << std::endl;
       return false;
+    }
 
   return true;
 }
@@ -146,9 +158,15 @@ MutableCoefficientsInterface::resize(std::size_t size, Real fill, bool fill_out_
 
 void
 MutableCoefficientsInterface::setCharacteristics(
-    const std::vector<std::size_t> & new_characteristics)
+    const std::vector<std::size_t> & copy_characteristics)
 {
-  _characteristics = new_characteristics;
+  _characteristics = copy_characteristics;
+}
+
+void
+MutableCoefficientsInterface::setCharacteristics(std::vector<std::size_t> && move_characteristics)
+{
+  _characteristics = move_characteristics;
 }
 
 void

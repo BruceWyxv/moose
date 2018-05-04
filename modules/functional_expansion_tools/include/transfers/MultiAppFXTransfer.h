@@ -42,30 +42,29 @@ private:
   /**
    * Gets a MutableCoefficientsInterface-based Executioner, intented for use via function pointer
    */
-  MutableCoefficientsInterface & getMutableCoefficientsExecutioner(FEProblemBase & base,
-                                                                   const std::string & object_name,
-                                                                   THREAD_ID thread);
+  MutableCoefficientsInterface & getMutableCoefficientsExecutioner(
+      FEProblemBase & base, const std::string & object_name = "", THREAD_ID thread = 0) const;
 
   /**
    * Gets a MutableCoefficientsInterface-based Function, intented for use via function pointer
    */
   MutableCoefficientsInterface & getMutableCoefficientsFunction(FEProblemBase & base,
                                                                 const std::string & object_name,
-                                                                THREAD_ID thread);
+                                                                THREAD_ID thread) const;
 
   /**
    * Gets a MutableCoefficientsInterface-based UserObject, intended for use via function pointer
    */
   MutableCoefficientsInterface & getMutableCoefficientsUserOject(FEProblemBase & base,
                                                                  const std::string & object_name,
-                                                                 THREAD_ID thread);
+                                                                 THREAD_ID thread) const;
 
   /**
    * Function pointer typedef for functions used to find, convert, and return the appropriate
    * MutableCoefficientsInterface object from an FEProblemBase.
    */
   typedef MutableCoefficientsInterface & (MultiAppFXTransfer::*GetProblemObject)(
-      FEProblemBase & base, const std::string & object_name, THREAD_ID thread);
+      FEProblemBase & base, const std::string & object_name, THREAD_ID thread) const;
 
 protected:
   /**
@@ -74,7 +73,7 @@ protected:
    */
   virtual GetProblemObject scanProblemBaseForObject(FEProblemBase & base,
                                                     const std::string & object_name,
-                                                    const std::string & app_name);
+                                                    const std::string & app_name) const;
 
   /// Function pointer for grabbing the MultiApp object
   GetProblemObject getMultiAppObject;

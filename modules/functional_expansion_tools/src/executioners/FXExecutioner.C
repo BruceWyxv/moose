@@ -17,12 +17,23 @@ validParams<FXExecutioner>()
 
   params += validParams<MutableCoefficientsInterface>();
 
+  params.addRequiredParam<std::string>(
+      "name", "The name of this class, used for identification by MultiAppFXTransfer.");
+
   return params;
 }
 
 FXExecutioner::FXExecutioner(const InputParameters & parameters)
-  : Transient(parameters), MutableCoefficientsInterface(this, parameters)
+  : Transient(parameters),
+    MutableCoefficientsInterface(this, parameters),
+    _transfer_name(getParam<std::string>("name"))
 {
+}
+
+const std::string &
+FXExecutioner::getTransferName() const
+{
+  return _transfer_name;
 }
 
 void

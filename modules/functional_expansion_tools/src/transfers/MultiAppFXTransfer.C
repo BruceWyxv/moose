@@ -12,6 +12,7 @@
 #include "MultiApp.h"
 #include "UserObject.h"
 
+#include "FXExecutioner.h"
 #include "MultiAppFXTransfer.h"
 
 registerMooseObject("FunctionalExpansionToolsApp", MultiAppFXTransfer);
@@ -79,7 +80,7 @@ MultiAppFXTransfer::initialSetup()
 MultiAppFXTransfer::GetProblemObject
 MultiAppFXTransfer::scanProblemBaseForObject(FEProblemBase & base,
                                              const std::string & object_name,
-                                             const std::string & app_name)
+                                             const std::string & app_name) const
 {
   /*
    * For now we are only considering Executioners, Functions, and UserObjects, as they are the only
@@ -97,11 +98,38 @@ MultiAppFXTransfer::scanProblemBaseForObject(FEProblemBase & base,
    */
   MutableCoefficientsInterface * interface;
 
-  if (base.hasExecutioner(object_name))
+  // Block for objects that depend on the MooseApp corresponding to 'base'
   {
+    MooseApp & moose_app = base.getMooseApp();
+
+    // Executioner
+    Executioner * executioner = moose_app.getExecutioner();
+    FXExecutioner * fx_executioner = dynamic_cast<FXExecutioner *>(executioner);
+
+    // Check to see if the executioner is a subclass of MutableCoefficientsInterface
+    if (fx_executioner)
+    {
+      if (fx_executioner->getTransferName().compare(object_name) == 0)
+        return &MultiAppFXTransfer::getMutableCoefficientsExecutioner;
+      else
+        // Provide only a warning: there may be may possible MultiApps for coupling candidates and
+        // we are looking for a specific one
+        mooseWarning(
+            "In MultiAppFXTransfer '",
+            name(),
+            "': Executioner '",
+            fx_executioner->getTransferName(),
+            "' in MultiApp '",
+            app_name,
+            "' does not match the Executioner '",
+            object_name,
+            "' that you provided.",
+            " Please update the name if this is the excutioner to which you are trying to couple.");
+    }
   }
-  // Check to see if the object with object_name is a Function
-  else if (base.hasFunction(object_name))
+
+  // Functions
+  if (base.hasFunction(object_name))
   {
     Function & function = base.getFunction(object_name);
     interface = dynamic_cast<MutableCoefficientsInterface *>(&function);
@@ -110,15 +138,18 @@ MultiAppFXTransfer::scanProblemBaseForObject(FEProblemBase & base,
     if (interface)
       return &MultiAppFXTransfer::getMutableCoefficientsFunction;
     else
-      mooseError("Function '",
+      mooseError("In MultiAppFXTransfer '",
+                 name(),
+                 "': Function '",
                  object_name,
-                 "' in '",
+                 "' in MultiApp '",
                  app_name,
                  "' does not inherit from MutableCoefficientsInterface.",
                  " Please change the function type and try again.");
   }
-  // Check to see if the object with object_name is a UserObject
-  else if (base.hasUserObject(object_name))
+
+  // UserObjects
+  if (base.hasUserObject(object_name))
   {
     // Get the non-const qualified UserObject, otherwise we would use getUserObject()
     UserObject * user_object = base.getUserObjects().getActiveObject(object_name).get();
@@ -128,9 +159,11 @@ MultiAppFXTransfer::scanProblemBaseForObject(FEProblemBase & base,
     if (interface)
       return &MultiAppFXTransfer::getMutableCoefficientsUserOject;
     else
-      mooseError("UserObject '",
+      mooseError("In MultiAppFXTransfer '",
+                 name(),
+                 "': UserObject '",
                  object_name,
-                 "' in '",
+                 "' in MultiApp '",
                  app_name,
                  "' does not inherit from MutableCoefficientsInterface.",
                  " Please change the function type and try again.");
@@ -140,9 +173,17 @@ MultiAppFXTransfer::scanProblemBaseForObject(FEProblemBase & base,
 }
 
 MutableCoefficientsInterface &
+MultiAppFXTransfer::getMutableCoefficientsExecutioner(FEProblemBase & base,
+                                                      const std::string & /*object_name*/,
+                                                      THREAD_ID /*thread*/) const
+{
+  return dynamic_cast<MutableCoefficientsInterface &>(*(base.getMooseApp().getExecutioner()));
+}
+
+MutableCoefficientsInterface &
 MultiAppFXTransfer::getMutableCoefficientsFunction(FEProblemBase & base,
                                                    const std::string & object_name,
-                                                   THREAD_ID thread)
+                                                   THREAD_ID thread) const
 {
   return dynamic_cast<MutableCoefficientsInterface &>(base.getFunction(object_name, thread));
 }
@@ -150,7 +191,7 @@ MultiAppFXTransfer::getMutableCoefficientsFunction(FEProblemBase & base,
 MutableCoefficientsInterface &
 MultiAppFXTransfer::getMutableCoefficientsUserOject(FEProblemBase & base,
                                                     const std::string & object_name,
-                                                    THREAD_ID thread)
+                                                    THREAD_ID thread) const
 {
   // Get the non-const qualified UserObject, otherwise we would use getUserObject()
   UserObject * user_object = base.getUserObjects().getActiveObject(object_name, thread).get();

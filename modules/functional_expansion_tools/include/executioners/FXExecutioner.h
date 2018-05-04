@@ -24,6 +24,11 @@ class FXExecutioner : public Transient, public MutableCoefficientsInterface
 public:
   FXExecutioner(const InputParameters & parameters);
 
+  /**
+   * Get the name to be used for transfer identifications
+   */
+  const std::string & getTransferName() const;
+
 protected:
   /**
    * Must be defined by an implementor to export the coefficients from the coefficient array into a
@@ -32,7 +37,7 @@ protected:
   virtual void exportCoefficients(const std::vector<Real> & out_coefficients) = 0;
 
   /**
-   * Must be defiined by an implementor to import the coefficients from the wrapped process and load
+   * Must be defined by an implementor to import the coefficients from the wrapped process and load
    * them into the coefficient array
    */
   virtual void importCoefficients(std::vector<Real> & array_to_fill) = 0;
@@ -49,6 +54,9 @@ protected:
 
   /// A flag that indicates if this is the first run or not
   bool _first_run;
+
+  /// The constructor-provided name to be used for transfer identification
+  const std::string _transfer_name;
 
 private:
   /*

@@ -22,42 +22,10 @@ validParams<FunctionSeries>()
 {
   InputParameters params = validParams<MutableCoefficientsFunctionInterface>();
 
+  params += validParams<FXInputParameters>();
+
   params.addClassDescription("This function uses a convolution of functional series (functional "
                              "expansion or FX) to create a 1D, 2D, or 3D function");
-
-  // The available composite series types.
-  //   Cartesian:      1D, 2D, or 3D, depending on which of x, y, and z are present
-  //   CylindricalDuo: planar disc expansion and axial expansion
-  MooseEnum series_types("Cartesian CylindricalDuo");
-  MooseEnum single_series_types_1D("Legendre");
-  MooseEnum single_series_types_2D("Zernike");
-
-  params.addRequiredParam<MooseEnum>(
-      "series_type", series_types, "The type of function series to construct.");
-
-  /*
-   * This needs to use `unsigned int` instead of `std::size_t` because otherwise MOOSE errors at
-   * runtime
-   */
-  params.addRequiredParam<std::vector<unsigned int>>("orders",
-                                                     "The order of each series. These must be "
-                                                     "defined as \"x y z\" for Cartesian, and \"z "
-                                                     "disc\" for CylindricalDuo.");
-
-  params.addParam<std::vector<Real>>("physical_bounds",
-                                     "The physical bounds of the function series. These must be "
-                                     "defined as \"x_min x_max y_min y_max z_min z_max\" for "
-                                     "Cartesian, and \"axial_min axial_max disc_center1 "
-                                     "disc_center2 radius\" for CylindricalDuo");
-
-  params.addParam<MooseEnum>("x", single_series_types_1D, "The series to use for the x-direction.");
-  params.addParam<MooseEnum>("y", single_series_types_1D, "The series to use for the y-direction.");
-  params.addParam<MooseEnum>("z", single_series_types_1D, "The series to use for the z-direction.");
-
-  params.addParam<MooseEnum>("disc",
-                             single_series_types_2D,
-                             "The series to use for the disc. Its direction is determined by "
-                             "orthogonality to the declared direction of the axis.");
 
   std::string normalization_types = "orthonormal sqrt_mu standard";
   MooseEnum expansion_type(normalization_types, "standard");
@@ -69,18 +37,13 @@ validParams<FunctionSeries>()
       "generation_type",
       generation_type,
       "The normalization used for generation of the basis function coefficients");
+
   return params;
 }
 
 FunctionSeries::FunctionSeries(const InputParameters & parameters)
-  : MutableCoefficientsFunctionInterface(this, parameters),
-    _orders(convertOrders(getParam<std::vector<unsigned int>>("orders"))),
-    _physical_bounds(getParam<std::vector<Real>>("physical_bounds")),
-    _series_type_name(getParam<MooseEnum>("series_type")),
-    _x(getParam<MooseEnum>("x")),
-    _y(getParam<MooseEnum>("y")),
-    _z(getParam<MooseEnum>("z")),
-    _disc(getParam<MooseEnum>("disc")),
+  : FXInputParameters(parameters),
+    MutableCoefficientsFunctionInterface(this, parameters),
     _expansion_type(getParam<MooseEnum>("expansion_type")),
     _generation_type(getParam<MooseEnum>("generation_type"))
 {
@@ -96,17 +59,17 @@ FunctionSeries::FunctionSeries(const InputParameters & parameters)
      * they appear in the input file). Hence, the 'orders' and 'physical_bounds' vectors must always
      * be specified in x, y, z order.
      */
-    if (isParamValid("x"))
+    if (_x.isValid())
     {
       domains.push_back(FunctionalBasisInterface::_domain_options = "x");
       types.push_back(_x);
     }
-    if (isParamValid("y"))
+    if (_y.isValid())
     {
       domains.push_back(FunctionalBasisInterface::_domain_options = "y");
       types.push_back(_y);
     }
-    if (isParamValid("z"))
+    if (_z.isValid())
     {
       domains.push_back(FunctionalBasisInterface::_domain_options = "z");
       types.push_back(_z);
@@ -127,21 +90,21 @@ FunctionSeries::FunctionSeries(const InputParameters & parameters)
      * order. The first entry in _domains is interpreted as the axial direction, and the following
      * two as the planar.
      */
-    if (isParamValid("x"))
+    if (_x.isValid())
     {
       domains = {FunctionalBasisInterface::_domain_options = "x",
                  FunctionalBasisInterface::_domain_options = "y",
                  FunctionalBasisInterface::_domain_options = "z"};
       types.push_back(_x);
     }
-    if (isParamValid("y"))
+    if (_y.isValid())
     {
       domains = {FunctionalBasisInterface::_domain_options = "y",
                  FunctionalBasisInterface::_domain_options = "x",
                  FunctionalBasisInterface::_domain_options = "z"};
       types.push_back(_y);
     }
-    if (isParamValid("z"))
+    if (_z.isValid())
     {
       domains = {FunctionalBasisInterface::_domain_options = "z",
                  FunctionalBasisInterface::_domain_options = "x",
@@ -284,10 +247,4 @@ operator<<(std::ostream & stream, const FunctionSeries & me)
   stream << "\n\n";
 
   return stream;
-}
-
-std::vector<std::size_t>
-FunctionSeries::convertOrders(const std::vector<unsigned int> & orders)
-{
-  return std::vector<std::size_t>(orders.begin(), orders.end());
 }

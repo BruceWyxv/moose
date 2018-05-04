@@ -10,8 +10,8 @@
 #ifndef FUNCTIONSERIES_H
 #define FUNCTIONSERIES_H
 
+#include "FXInputParameters.h"
 #include "MutableCoefficientsFunctionInterface.h"
-#include "CompositeSeriesBasisInterface.h"
 
 class FunctionSeries;
 
@@ -23,7 +23,7 @@ InputParameters validParams<FunctionSeries>();
  * convolved function series. Its inheritance tree includes MutableCoefficientsInterface, which
  * enables easy MultiApp transfers of coefficients.
  */
-class FunctionSeries : public MutableCoefficientsFunctionInterface
+class FunctionSeries : public FXInputParameters, public MutableCoefficientsFunctionInterface
 {
 public:
   FunctionSeries(const InputParameters & parameters);
@@ -89,42 +89,10 @@ public:
   friend std::ostream & operator<<(std::ostream & stream, const FunctionSeries & me);
 
 protected:
-  /// The vector holding the orders of each single series
-  const std::vector<std::size_t> _orders;
-
-  /// The physical bounds of the function series
-  const std::vector<Real> _physical_bounds;
-
-  /// Stores a pointer to the functional series object
-  std::unique_ptr<CompositeSeriesBasisInterface> _series_type;
-
-  /// Stores the name of the current functional series type
-  const MooseEnum & _series_type_name;
-
-  /*
-   * Enumerations of the possible series types for the different spatial expansions. Not all of
-   * these will be provided for any one series.
-   */
-  /// Stores the name of the single function series to use in the x direction
-  const MooseEnum & _x;
-  /// Stores the name of the single function series to use in the y direction
-  const MooseEnum & _y;
-  /// Stores the name of the single function series to use in the z direction
-  const MooseEnum & _z;
-  /// Stores the name of the single function series to use for a unit disc
-  const MooseEnum & _disc;
   /// The normalization type for expansion
   const MooseEnum & _expansion_type;
   /// The normalization type for generation
   const MooseEnum & _generation_type;
-
-private:
-  /**
-   * Static function to convert an array of `unsigned int` to `std::size_t`. The MOOSE parser has
-   * issues reading a list of integers in as `std::size_t` (unsigned long), so this workaround is
-   * required in order to set `_orders` in the constructor initializer list.
-   */
-  static std::vector<std::size_t> convertOrders(const std::vector<unsigned int> & orders);
 };
 
 #endif
